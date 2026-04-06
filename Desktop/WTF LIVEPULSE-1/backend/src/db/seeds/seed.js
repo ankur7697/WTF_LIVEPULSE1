@@ -2,13 +2,18 @@ const { bulkInsertRows } = require('./bulkInsert');
 const { generateSeedData } = require('./generateSeedData');
 
 async function seedDatabase(client, options = {}) {
-  const seed = generateSeedData(options);
+  const seed = generateSeedData({
+    ...options,
+    specSeed: true,
+  });
 
   await client.query('BEGIN');
 
   try {
     await client.query('SET LOCAL synchronous_commit = OFF');
 
+    // eslint-disable-next-line no-console
+    console.log('Seeding gyms...');
     await bulkInsertRows(client, 'gyms', [
       'id',
       'name',
@@ -21,7 +26,11 @@ async function seedDatabase(client, options = {}) {
       'created_at',
       'updated_at',
     ], seed.gyms);
+    // eslint-disable-next-line no-console
+    console.log('Seeding gyms... done');
 
+    // eslint-disable-next-line no-console
+    console.log(`Seeding ${seed.members.length} members...`);
     await bulkInsertRows(client, 'members', [
       'id',
       'gym_id',
@@ -36,14 +45,33 @@ async function seedDatabase(client, options = {}) {
       'last_checkin_at',
       'created_at',
     ], seed.members);
+    // eslint-disable-next-line no-console
+    console.log(`Seeding ${seed.members.length} members... done`);
 
+    // eslint-disable-next-line no-console
+    console.log('Seeding 90 days of check-ins...');
     await bulkInsertRows(client, 'checkins', [
       'member_id',
       'gym_id',
       'checked_in',
       'checked_out',
-    ], seed.checkins, 750);
+    ], seed.checkins, 1000);
 
+    await client.query(`
+      UPDATE members m
+      SET last_checkin_at = activity.last_checkin_at
+      FROM (
+        SELECT member_id, MAX(checked_in) AS last_checkin_at
+        FROM checkins
+        GROUP BY member_id
+      ) activity
+      WHERE m.id = activity.member_id
+    `);
+    // eslint-disable-next-line no-console
+    console.log('Seeding 90 days of check-ins... done');
+
+    // eslint-disable-next-line no-console
+    console.log('Seeding payment history...');
     await bulkInsertRows(client, 'payments', [
       'id',
       'member_id',
@@ -53,7 +81,9 @@ async function seedDatabase(client, options = {}) {
       'payment_type',
       'paid_at',
       'notes',
-    ], seed.payments, 750);
+    ], seed.payments, 1000);
+    // eslint-disable-next-line no-console
+    console.log('Seeding payment history... done');
 
     await client.query('COMMIT');
   } catch (error) {
@@ -70,4 +100,3 @@ async function seedDatabase(client, options = {}) {
 module.exports = {
   seedDatabase,
 };
-

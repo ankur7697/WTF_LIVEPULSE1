@@ -1,6 +1,7 @@
 const { getPool } = require('../db/pool');
 const { seedDatabase } = require('../db/seeds/seed');
 const {
+  buildChurnRiskMembers,
   buildLiveSummary,
   calculateCapacityPct,
   getDateRangeStart,
@@ -464,7 +465,7 @@ function createPgStore({ pool = getPool() } = {}) {
           FROM members
           WHERE gym_id = $1
             AND status = 'active'
-            AND last_checkin_at < NOW() - INTERVAL '45 days'
+            AND last_checkin_at <= NOW() - INTERVAL '45 days'
           ORDER BY last_checkin_at ASC
         `,
         [gymId],
@@ -499,7 +500,7 @@ function createPgStore({ pool = getPool() } = {}) {
       date_range: dateRange,
       heatmap: heatmapResult.rows,
       revenue_by_plan: revenueByPlan,
-      churn_risk: churnResult.rows,
+      churn_risk: buildChurnRiskMembers(churnResult.rows),
       new_renewal_ratio: {
         total,
         new_joiner_pct: total ? Math.round((ratioCounts.new / total) * 100) : 0,

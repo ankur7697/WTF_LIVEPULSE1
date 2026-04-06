@@ -555,42 +555,91 @@ function DashboardProvider({ children }) {
       }
     }
 
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const socket = new WebSocket(`${protocol}//${window.location.host}/ws`);
+    let socket = null;
+    let reconnectTimer = null;
+    let shouldReconnect = true;
+    let reconnectDelayMs = 1000;
 
-    socket.addEventListener('open', () => {
-      dispatch({ type: 'SET_CONNECTION', connected: true });
-    });
-
-    socket.addEventListener('close', () => {
-      dispatch({ type: 'SET_CONNECTION', connected: false });
-    });
-
-    socket.addEventListener('error', () => {
-      dispatch({ type: 'SET_CONNECTION', connected: false });
-    });
-
-    socket.addEventListener('message', (messageEvent) => {
-      try {
-        const event = JSON.parse(messageEvent.data);
-        if (event.type !== 'CONNECTED') {
-          dispatch({ type: 'LIVE_EVENT', event });
-        }
-      } catch (error) {
-        dispatch({
-          type: 'PUSH_TOAST',
-          toast: {
-            id: crypto.randomUUID(),
-            title: 'Live feed error',
-            body: 'A WebSocket message could not be parsed.',
-            severity: 'critical',
-          },
-        });
+    const clearReconnectTimer = () => {
+      if (reconnectTimer) {
+        window.clearTimeout(reconnectTimer);
+        reconnectTimer = null;
       }
-    });
+    };
+
+    const scheduleReconnect = () => {
+      if (!shouldReconnect || reconnectTimer) {
+        return;
+      }
+
+      reconnectTimer = window.setTimeout(() => {
+        reconnectTimer = null;
+        if (shouldReconnect) {
+          reconnectDelayMs = Math.min(reconnectDelayMs * 2, 5000);
+          connect();
+        }
+      }, reconnectDelayMs);
+    };
+
+    function connect() {
+      if (!shouldReconnect) {
+        return;
+      }
+
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      socket = new WebSocket(`${protocol}//${window.location.host}/ws`);
+
+      socket.addEventListener('open', () => {
+        reconnectDelayMs = 1000;
+        dispatch({ type: 'SET_CONNECTION', connected: true });
+      });
+
+      socket.addEventListener('close', () => {
+        dispatch({ type: 'SET_CONNECTION', connected: false });
+        scheduleReconnect();
+      });
+
+      socket.addEventListener('error', () => {
+        dispatch({ type: 'SET_CONNECTION', connected: false });
+
+        if (socket && socket.readyState !== WebSocket.CLOSED) {
+          try {
+            socket.close();
+          } catch {
+            // Ignore close errors and let the reconnect timer recover.
+          }
+        }
+      });
+
+      socket.addEventListener('message', (messageEvent) => {
+        try {
+          const event = JSON.parse(messageEvent.data);
+          if (event.type !== 'CONNECTED') {
+            dispatch({ type: 'LIVE_EVENT', event });
+          }
+        } catch (error) {
+          dispatch({
+            type: 'PUSH_TOAST',
+            toast: {
+              id: crypto.randomUUID(),
+              title: 'Live feed error',
+              body: 'A WebSocket message could not be parsed.',
+              severity: 'critical',
+            },
+          });
+        }
+      });
+    }
+
+    connect();
 
     return () => {
-      socket.close();
+      shouldReconnect = false;
+      clearReconnectTimer();
+
+      if (socket) {
+        socket.close();
+      }
     };
   }, []);
 

@@ -8,6 +8,7 @@ const {
 } = require('../../utils/time');
 const { createRng, pick, pickWeighted, randomInt } = require('../../utils/random');
 const { getTrafficWeightForHour } = require('../../services/simulatorService');
+const { buildSpecSeedData } = require('./specSeedData');
 
 const FIRST_NAMES = [
   'Aarav', 'Vivaan', 'Aditya', 'Ishaan', 'Arjun', 'Rohan', 'Karan', 'Kabir',
@@ -308,6 +309,10 @@ function buildHistoricalActivity({ gyms, membersByGym, days, baseCheckins, baseP
 }
 
 function generateSeedData(options = {}) {
+  if (options.specSeed) {
+    return buildSpecSeedData(options);
+  }
+
   const now = options.now ? toDate(options.now) : new Date();
   const rng = createRng(options.seed || 42);
   const gyms = createGymList().slice(0, options.gymCount || 10);

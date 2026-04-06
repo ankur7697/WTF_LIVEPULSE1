@@ -3,6 +3,14 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
   plugins: [react()],
+  build: {
+    rollupOptions: {
+      input: 'src/main.jsx',
+      output: {
+        entryFileNames: 'assets/main.js',
+      },
+    },
+  },
   server: {
     host: '0.0.0.0',
     port: 4173,

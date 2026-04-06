@@ -101,7 +101,7 @@ function buildChurnRiskMembers(members, now = new Date()) {
     .filter((member) => member.status === 'active' && member.last_checkin_at)
     .map((member) => {
       const daysSinceCheckin = differenceInDays(now, member.last_checkin_at);
-      const risk = daysSinceCheckin >= 60 ? 'Critical' : daysSinceCheckin >= 45 ? 'High' : null;
+      const risk = daysSinceCheckin > 60 ? 'Critical' : daysSinceCheckin >= 45 ? 'High' : null;
 
       return {
         ...member,
@@ -238,4 +238,3 @@ module.exports = {
   getDateRangeStart,
   getOccupancyTone,
 };
-
