@@ -1,0 +1,16 @@
+Q2 Today's Revenue — Single Gym
+Seed gym id: 148668d2-ae09-42dc-a353-24e962d093cc
+SELECT SUM(amount) FROM payments WHERE gym_id = '148668d2-ae09-42dc-a353-24e962d093cc' AND paid_at >= CURRENT_DATE;
+
+EXPLAIN (ANALYZE, BUFFERS)
+Aggregate  (cost=264.14..264.15 rows=1 width=32) (actual time=4.501..4.501 rows=1 loops=1)
+  Buffers: shared hit=4907
+  ->  Index Scan using idx_payments_date on payments  (cost=0.29..263.04 rows=439 width=5) (actual time=0.064..4.423 rows=500 loops=1)
+        Index Cond: (paid_at >= CURRENT_DATE)
+        Filter: (gym_id = '148668d2-ae09-42dc-a353-24e962d093cc'::uuid)
+        Rows Removed by Filter: 4813
+        Buffers: shared hit=4907
+Planning:
+  Buffers: shared hit=123
+Planning Time: 0.730 ms
+Execution Time: 4.541 ms

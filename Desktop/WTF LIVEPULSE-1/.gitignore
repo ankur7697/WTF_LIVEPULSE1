@@ -1,0 +1,11 @@
+node_modules
+dist
+coverage
+.DS_Store
+.env
+backend/.env
+frontend/.env
+backend/.nyc_output
+frontend/playwright-report
+frontend/test-results
+

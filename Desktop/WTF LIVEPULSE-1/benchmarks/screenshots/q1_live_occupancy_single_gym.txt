@@ -1,0 +1,15 @@
+Q1 Live Occupancy — Single Gym
+Seed gym id: 148668d2-ae09-42dc-a353-24e962d093cc
+SELECT COUNT(*) FROM checkins WHERE gym_id = '148668d2-ae09-42dc-a353-24e962d093cc' AND checked_out IS NULL;
+
+EXPLAIN (ANALYZE, BUFFERS)
+Aggregate  (cost=257.33..257.34 rows=1 width=8) (actual time=4.474..4.475 rows=1 loops=1)
+  Buffers: shared hit=235
+  ->  Index Only Scan using idx_checkins_live_occupancy on checkins  (cost=0.29..255.03 rows=919 width=0) (actual time=0.134..4.369 rows=1048 loops=1)
+        Index Cond: (gym_id = '148668d2-ae09-42dc-a353-24e962d093cc'::uuid)
+        Heap Fetches: 1865
+        Buffers: shared hit=235
+Planning:
+  Buffers: shared hit=128
+Planning Time: 1.116 ms
+Execution Time: 4.612 ms

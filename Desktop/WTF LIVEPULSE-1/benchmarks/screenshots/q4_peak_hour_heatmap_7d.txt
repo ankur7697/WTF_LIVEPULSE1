@@ -1,0 +1,16 @@
+Q4 Peak Hour Heatmap (7d)
+Seed gym id: 148668d2-ae09-42dc-a353-24e962d093cc
+SELECT * FROM gym_hourly_stats WHERE gym_id = '148668d2-ae09-42dc-a353-24e962d093cc';
+
+EXPLAIN (ANALYZE, BUFFERS)
+Bitmap Heap Scan on gym_hourly_stats  (cost=9.42..22.27 rows=148 width=32) (actual time=0.064..0.503 rows=148 loops=1)
+  Recheck Cond: (gym_id = '148668d2-ae09-42dc-a353-24e962d093cc'::uuid)
+  Heap Blocks: exact=11
+  Buffers: shared hit=13 dirtied=1
+  ->  Bitmap Index Scan on gym_hourly_stats_unique  (cost=0.00..9.39 rows=148 width=0) (actual time=0.045..0.045 rows=150 loops=1)
+        Index Cond: (gym_id = '148668d2-ae09-42dc-a353-24e962d093cc'::uuid)
+        Buffers: shared hit=2
+Planning:
+  Buffers: shared hit=84
+Planning Time: 0.419 ms
+Execution Time: 0.576 ms

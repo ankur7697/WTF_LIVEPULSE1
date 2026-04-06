@@ -1,0 +1,17 @@
+Q6 Active Anomalies — All Gyms
+Seed gym id: 148668d2-ae09-42dc-a353-24e962d093cc
+SELECT * FROM anomalies WHERE resolved = FALSE ORDER BY detected_at DESC;
+
+EXPLAIN (ANALYZE, BUFFERS)
+Sort  (cost=1.98..2.04 rows=23 width=146) (actual time=0.048..0.049 rows=10 loops=1)
+  Sort Key: detected_at DESC
+  Sort Method: quicksort  Memory: 26kB
+  Buffers: shared hit=4
+  ->  Seq Scan on anomalies  (cost=0.00..1.46 rows=23 width=146) (actual time=0.027..0.028 rows=10 loops=1)
+        Filter: (NOT resolved)
+        Rows Removed by Filter: 5
+        Buffers: shared hit=1
+Planning:
+  Buffers: shared hit=114
+Planning Time: 0.450 ms
+Execution Time: 0.073 ms

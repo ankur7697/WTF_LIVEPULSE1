@@ -1,0 +1,20 @@
+Q5 Cross-Gym Revenue Comparison
+Seed gym id: 148668d2-ae09-42dc-a353-24e962d093cc
+SELECT gym_id, SUM(amount) FROM payments WHERE paid_at >= NOW() - INTERVAL '30 days' GROUP BY gym_id ORDER BY SUM(amount) DESC;
+
+EXPLAIN (ANALYZE, BUFFERS)
+Sort  (cost=502.01..502.04 rows=10 width=48) (actual time=5.034..5.035 rows=10 loops=1)
+  Sort Key: (sum(amount)) DESC
+  Sort Method: quicksort  Memory: 25kB
+  Buffers: shared hit=7097
+  ->  HashAggregate  (cost=501.72..501.85 rows=10 width=48) (actual time=4.897..4.899 rows=10 loops=1)
+        Group Key: gym_id
+        Batches: 1  Memory Usage: 24kB
+        Buffers: shared hit=7094
+        ->  Index Scan using idx_payments_date on payments  (cost=0.29..459.27 rows=8490 width=21) (actual time=0.031..3.405 rows=8954 loops=1)
+              Index Cond: (paid_at >= (now() - '30 days'::interval))
+              Buffers: shared hit=7094
+Planning:
+  Buffers: shared hit=139
+Planning Time: 1.060 ms
+Execution Time: 5.197 ms

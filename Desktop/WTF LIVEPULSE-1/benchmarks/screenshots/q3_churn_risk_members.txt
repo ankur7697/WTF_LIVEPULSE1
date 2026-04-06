@@ -1,0 +1,12 @@
+Q3 Churn Risk Members
+Seed gym id: 148668d2-ae09-42dc-a353-24e962d093cc
+SELECT id, name, last_checkin_at FROM members WHERE status = 'active' AND last_checkin_at < NOW() - INTERVAL '45 days';
+
+EXPLAIN (ANALYZE, BUFFERS)
+Index Scan using idx_members_churn_risk on members  (cost=0.29..8.30 rows=1 width=35) (actual time=0.028..0.028 rows=0 loops=1)
+  Index Cond: (last_checkin_at < (now() - '45 days'::interval))
+  Buffers: shared hit=2
+Planning:
+  Buffers: shared hit=106
+Planning Time: 0.670 ms
+Execution Time: 0.067 ms
